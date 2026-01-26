@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+@theme {
+  /* Marine Purity V3: Deep Ocean Aesthetic */
+  /* Reverting to a rich, immersive underwater feel while keeping it modern */
+
+  /* The Surface (Backgrounds) */
+  --color-surface-pure: #0f172a;
+  /* Slate 900 */
+  --color-surface-foam: rgba(255, 255, 255, 0.1);
+  /* Translucent White for Glass */
+  --color-surface-sunlit: rgba(56, 189, 248, 0.2);
+  /* Sky Blue Glow */
+  --color-sand-surface: #1e293b;
+  /* Slate 800 - replacing sand with dark rock */
+
+  /* The Deep (Text & Contours) */
+  --color-ocean-depth: #f0f9ff;
+  /* Sky 50 - Primary Text (Light) */
+  --color-ocean-medium: #bae6fd;
+  /* Sky 200 - Secondary Text */
+  --color-ocean-light: #38bdf8;
+  /* Sky 400 - Accents (Cyan/Blue) */
+  --color-coral-accent: #f43f5e;
+  /* Rose 500 - Warmth */
+
+  /* Functional Colors */
+  --color-alert-red: #ef4444;
+  --color-success-green: #34d399;
+  /* Emerald 400 - Brighter for dark mode */
+  --color-sand-gold: #fbbf24;
+  /* Amber 400 - Glowing Gold */
+
+  /* Fonts */
+  --font-display: 'Inter', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+
+  /* Animations */
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-ripple: ripple 3s linear infinite;
+  --animate-wave-slow: wave 15s ease-in-out infinite alternate;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-slide-up: slideUp 0.7s ease-out forwards;
+  --animate-fade-in: fadeIn 1s ease-out forwards;
+}
+
+@media (prefers-reduced-motion) {
+  @theme {
+    --animate-float: none;
+    --animate-ripple: none;
+    --animate-wave-slow: none;
+    --animate-shimmer: none;
+    --animate-slide-up: none;
+    --animate-fade-in: none;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+body {
+  @apply text-ocean-depth antialiased overflow-hidden font-sans;
+  background-color: var(--color-surface-pure);
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
+    url('/ocean-bg.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-blend-mode: overlay, normal;
+  color: var(--color-ocean-depth);
+  font-family: 'Rajdhani', sans-serif;
+  position: relative;
+}
+
+/* Add an overlay to reduce opacity of the background image effectively */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  /* Dark slate overlay to reduce image intensity */
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-700/50 rounded-full hover:bg-cyan-500/50 transition-colors;
+}
+
+
+@layer components {
+
+  /* New Card: Deep Sea Glass */
+  /* Dark, frosted glass with a subtle light border */
+  /* New Card: Deep Sea Glass */
+  /* Darker, more contrast for text readability */
+  .marine-card {
+    @apply bg-slate-950/60 backdrop-blur-xl rounded-3xl transition-all duration-500 ease-out border border-white/5;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  }
+
+  .marine-card:hover {
+    @apply -translate-y-1 bg-slate-900/80 border-ocean-light/20;
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.5),
+      0 0 20px -5px rgba(56, 189, 248, 0.15);
+  }
+
+  /* Navigation Dock */
+  .marine-dock {
+    @apply bg-slate-950/70 backdrop-blur-2xl border border-white/5 shadow-2xl shadow-black/40 rounded-3xl;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply text-slate-950 font-black tracking-wide px-6 py-3 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-sky-400/40 active:scale-95 border border-transparent hover:border-white/20;
+    background-image: linear-gradient(135deg, #38bdf8, #818cf8);
+  }
+
+  .btn-ghost {
+    @apply bg-white/5 text-ocean-depth font-semibold tracking-wide px-6 py-3 rounded-full transition-all duration-300 hover:bg-white/10 hover:text-white border border-white/5 hover:border-white/20 hover:shadow-lg hover:shadow-white/5;
+  }
+
+  /* Typography Utilities */
+  .heading-xl {
+    @apply font-display font-black text-white tracking-tighter;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  }
+
+  .text-water {
+    @apply text-ocean-medium leading-relaxed font-medium;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.2);
+  }
+
+  100% {
+    box-shadow: 0 0 0 20px rgba(56, 189, 248, 0);
+  }
+}
+
+@keyframes wave {
+  0% {
+    background-position: 50% 0%;
+  }
+
+  100% {
+    background-position: 50% 20%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-150%);
+  }
+
+  100% {
+    transform: translateX(150%);
+  }
+}
