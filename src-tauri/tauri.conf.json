@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tauri-app",
+  "productName": "Hiro Marine",
   "version": "0.1.0",
-  "identifier": "com.hp-gaming.tauri-app",
+  "identifier": "com.hiro-marine.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "tauri-app",
+        "title": "Hiro Marine",
         "width": 800,
         "height": 600
       }

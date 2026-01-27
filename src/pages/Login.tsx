@@ -316,9 +316,9 @@ export default function Login() {
                     </div>
 
                     <div className="mt-8 text-center w-full max-w-md">
-                        <p className="text-[10px] font-mono text-cyan-900/60 uppercase tracking-[0.2em] flex items-center justify-center gap-4">
+                        <p className="text-[10px] font-mono text-cyan-400/60 uppercase tracking-[0.2em] flex items-center justify-center gap-4">
                             <span>Hiro Marine OS v2.1</span>
-                            <a href="/about" className="hover:text-cyan-400 transition-colors border-b border-transparent hover:border-cyan-400/50">About</a>
+                            <a href="/about" className="hover:text-cyan-200 transition-colors border-b border-transparent hover:border-cyan-200/50">About</a>
                         </p>
                     </div>
                 </div>
