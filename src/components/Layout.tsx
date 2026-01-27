@@ -35,7 +35,7 @@ export default function Layout() {
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
                 <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] animate-wave-slow opacity-30 bg-[radial-gradient(circle,rgba(56,189,248,0.4)_0%,transparent_60%)] mix-blend-overlay"></div>
                 {/* Floating Bubbles/Particles can be added here */}
-                <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#020617] to-transparent opacity-80"></div>
+                <div className="absolute bottom-0 left-0 w-full h-1/2 bg-linear-to-t from-[#020617] to-transparent opacity-80"></div>
             </div>
 
             {/* Navigation: The Marine Pillar */}
@@ -129,7 +129,7 @@ function NavItem({ to, icon, label, className }: { to: string; icon: React.React
             {({ isActive }) => (
                 <>
                     {/* Active Indicator Background */}
-                    {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-ocean-light to-blue-500"></div>}
+                    {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b from-ocean-light to-blue-500"></div>}
 
                     <div className="relative z-10 flex items-center gap-4">
                         <span className={`transition-transform duration-300 ${isActive ? 'text-ocean-light scale-110' : 'group-hover:scale-110 group-hover:text-ocean-medium'}`}>{icon}</span>

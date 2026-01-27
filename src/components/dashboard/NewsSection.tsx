@@ -42,7 +42,7 @@ export default function NewsSection({ news }: NewsSectionProps) {
                             alt={news[0].title}
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-900/60 to-transparent" />
 
                         <div className="absolute bottom-0 left-0 p-8 w-full">
                             <span className="inline-block px-3 py-1 rounded-full bg-cyan-500/20 backdrop-blur-md text-cyan-300 border border-cyan-500/20 text-[10px] font-bold uppercase tracking-widest mb-3 shadow-[0_0_15px_rgba(34,211,238,0.2)]">
@@ -54,8 +54,8 @@ export default function NewsSection({ news }: NewsSectionProps) {
                             <p className="text-slate-300 text-sm line-clamp-2 md:line-clamp-none max-w-lg mb-4">
                                 {news[0].content}
                             </p>
-                            <div className="flex items-center gap-2 text-xs font-bold text-cyan-400 uppercase tracking-widest group-hover:translate-x-2 transition-transform">
-                                Read Transmisson <ArrowRight size={14} />
+                            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-cyan-400 uppercase tracking-widest group-hover:translate-x-2 transition-transform">
+                                Read Transmission <ArrowRight size={14} />
                             </div>
                         </div>
                     </button>
@@ -70,7 +70,7 @@ export default function NewsSection({ news }: NewsSectionProps) {
                             className="w-full bg-slate-800/40 backdrop-blur-sm rounded-2xl p-3 border border-white/5 hover:border-cyan-500/30 hover:bg-slate-800/60 transition-all cursor-pointer group flex gap-4 h-28 relative overflow-hidden text-left focus:ring-2 focus:ring-cyan-400 focus:outline-none"
                             aria-label={`Read article: ${item.title}`}
                         >
-                            <div className="w-24 h-full rounded-xl overflow-hidden flex-shrink-0 relative">
+                            <div className="w-24 h-full rounded-xl overflow-hidden shrink-0 relative">
                                 <img
                                     src={item.image_url || 'https://images.unsplash.com/photo-1468581264429-2548ef9eb732?q=80'}
                                     alt={item.title}

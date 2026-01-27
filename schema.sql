@@ -63,7 +63,7 @@ VALUES (
     (
         'Bleaching Event Detected',
         'Alert',
-        'https://images.unsplash.com/photo-1583212292454-1fe386d22584?q=80',
+        'https://www.barrierreef.org/generated/share-image/oceanimagebank-theoceanagency-bleaching-15-jpg-qsejvo-imqvdtcnjybma-z71fubq-pn-jpg.jpg',
         'High water temperatures in the Java Sea Sector A-4 have triggered early warning systems. Divers are advised to monitor coral health.',
         NOW() - INTERVAL '2 days'
     ),
@@ -226,7 +226,7 @@ VALUES (
         'Ujung Kulon National Park',
         true,
         5,
-        'https://images.unsplash.com/photo-1593845892520-2c700cb75fb7?q=80',
+        'https://cdn-gonef.nitrocdn.com/UbWAxHlpDDRAfYTBoCBfYvGZgzkfyWTb/assets/images/optimized/rev-d7b6478/seethewild.org/wp-content/uploads/2022/09/javan-rhinoceros-768x432-1.jpg',
         '3.1 - 3.2m',
         'Land/Coastal',
         'Mythic',
@@ -241,7 +241,7 @@ VALUES (
         'Karimunjawa / Thousand Islands',
         true,
         3,
-        'https://images.unsplash.com/photo-1437622643429-be0c07ea7cda?q=80',
+        'https://media.australian.museum/media/dd/images/WWF_Hawksbill_Turtle_RSwwfau_13085.10790cd.width-1200.f825f2c.jpg',
         '1m',
         'Surface - 20m',
         'Legendary',
@@ -256,7 +256,7 @@ VALUES (
         'Coral Reefs',
         false,
         1,
-        'https://images.unsplash.com/photo-1534234828569-1f481c15f93b?q=80',
+        'https://upload.wikimedia.org/wikipedia/commons/1/11/Giant_clam_or_Tridacna_gigas.jpg',
         '1.2m',
         'Shallow Reefs',
         'Rare',
@@ -271,7 +271,7 @@ VALUES (
         'Baluran National Park',
         true,
         10,
-        'https://images.unsplash.com/photo-1570028639259-2f22b82647c9?q=80',
+        'https://murexresorts.com/wp-content/uploads/2017/07/Dugong-Dugon-The-Sea-Cow-portrait.jpg',
         '3m',
         '1 - 30m',
         'Legendary',
@@ -286,7 +286,7 @@ VALUES (
         'Nusa Penida',
         true,
         7,
-        'https://images.unsplash.com/photo-1582967788606-a171f1080ca8?q=80',
+        'https://upload.wikimedia.org/wikipedia/commons/9/98/Mola_mola.jpg',
         '1.8 - 3.3m',
         'Surface - 600m',
         'Legendary',
@@ -501,7 +501,7 @@ INSERT WITH CHECK (auth.uid() = player_id);
 ----------------------------------------------------------------
 CREATE TABLE "public"."community_posts" (
     "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    "user_id" UUID REFERENCES "auth"."users"("id"),
+    "user_id" UUID REFERENCES "public"."players"("id"),
     "content" TEXT NOT NULL,
     "image_url" TEXT,
     "category" TEXT DEFAULT 'General',
@@ -538,6 +538,48 @@ CREATE POLICY "Users insert likes" ON "public"."community_likes" FOR
 INSERT WITH CHECK (auth.uid() = user_id);
 -- IMPORTANT: AFTER CREATING USERS manually (or via script), 
 -- you can manually insert posts using their IDs.
+-- 10. DUMMY COMMUNITY POSTS
+----------------------------------------------------------------
+INSERT INTO "public"."community_posts" (
+        "content",
+        "category",
+        "likes_count",
+        "comments_count",
+        "image_url",
+        "created_at"
+    )
+VALUES (
+        'Just spotted a pod of dolphins near Sector 7! The water clarity is amazing today.',
+        'Sighting',
+        24,
+        5,
+        'https://images.unsplash.com/photo-1570701564993-e00652af8aa7?q=80',
+        NOW() - INTERVAL '2 hours'
+    ),
+    (
+        'Found a huge ghost net entangled in the reef. Need backup for extraction!',
+        'Alert',
+        56,
+        12,
+        'https://images.unsplash.com/photo-1621451537084-482c73073a0f?q=80',
+        NOW() - INTERVAL '5 hours'
+    ),
+    (
+        'Anyone up for a beach cleanup this weekend at Pangandaran?',
+        'General',
+        18,
+        8,
+        NULL,
+        NOW() - INTERVAL '1 day'
+    ),
+    (
+        'Successfully deployed 50 mangrove saplings with the Maung Laut clan!',
+        'Milestone',
+        89,
+        2,
+        'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?q=80',
+        NOW() - INTERVAL '3 days'
+    );
 ----------------------------------------------------------------
 -- 10. ROLE MANAGEMENT (MANUAL PROMOTION)
 ----------------------------------------------------------------

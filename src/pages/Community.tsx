@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Heart, MessageSquare, Share2, Users, Send, ImageIcon, Trophy, AlertTriangle, Loader2, TrendingUp } from 'lucide-react';
+import { Search, Filter, Heart, MessageSquare, Share2, Users, Send, ImageIcon, Trophy, AlertTriangle, Loader2, TrendingUp, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface Profile {
@@ -53,6 +53,7 @@ export default function Community() {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('Newest');
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+    const [showRankingModal, setShowRankingModal] = useState(false);
 
     useEffect(() => {
         fetchPosts();
@@ -82,10 +83,10 @@ export default function Community() {
                 .from('community_posts')
                 .select(`
                     *,
-                    profiles:user_id (
-                        username,
+                    profiles:players (
+                        username:name,
                         avatar_url,
-                        rank_label
+                        rank_label:role
                     )
                 `)
                 .order('created_at', { ascending: false });
@@ -153,7 +154,7 @@ export default function Community() {
         });
 
     return (
-        <div className="h-full w-full p-4 lg:p-6 lg:pb-0 flex flex-col lg:flex-row gap-6 bg-gradient-to-br from-slate-900 via-[#0B1120] to-[#0f172a] text-slate-200 overflow-hidden max-w-[1920px] mx-auto">
+        <div className="h-full w-full p-4 lg:p-6 lg:pb-0 flex flex-col lg:flex-row gap-6 bg-linear-to-br from-slate-900 via-[#0B1120] to-surface-pure text-slate-200 overflow-hidden max-w-[1920px] mx-auto">
 
             {/* Mobile Filter Toggle */}
             <div className="lg:hidden flex gap-4 mb-4">
@@ -210,8 +211,8 @@ export default function Community() {
             )}
 
             {/* Left Sidebar (Desktop Filters & Info) - Reduced Width for Main Feed Priority */}
-            <div className="hidden lg:flex w-50 flex-col gap-6 h-full overflow-hidden flex-shrink-0 pb-6">
-                <div className="p-5 bg-slate-800/40 backdrop-blur-md rounded-[2rem] border border-white/5 shadow-xl flex flex-col gap-6 h-full">
+            <div className="hidden lg:flex w-50 flex-col gap-6 h-full overflow-hidden shrink-0 pb-6">
+                <div className="p-5 bg-slate-800/40 backdrop-blur-md rounded-4xl border border-white/5 shadow-xl flex flex-col gap-6 h-full">
                     {/* Search */}
                     <div className="relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -264,7 +265,7 @@ export default function Community() {
             </div>
 
             {/* Main Feed - PRIORITIZED (Wider, Flex-1) */}
-            <div className="flex-1 overflow-hidden flex flex-col h-full rounded-[2rem] relative min-w-0">
+            <div className="flex-1 overflow-hidden flex flex-col h-full rounded-4xl relative min-w-0">
                 {/* Header (Desktop) - Compact */}
                 <header className="hidden lg:flex items-end justify-between mb-4 px-2">
                     <div>
@@ -286,9 +287,9 @@ export default function Community() {
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar space-y-6 pb-24 px-1">
                     {/* Create Post Widget */}
-                    <div className="p-6 bg-slate-800/40 backdrop-blur-md rounded-[2rem] border border-white/10 shadow-lg">
+                    <div className="p-6 bg-slate-800/40 backdrop-blur-md rounded-4xl border border-white/10 shadow-lg">
                         <form onSubmit={handlePostSubmit} className="flex gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm shadow-lg shadow-cyan-500/20">
+                            <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-cyan-500 to-blue-600 flex items-center justify-center shrink-0 text-white font-bold text-sm shadow-lg shadow-cyan-500/20">
                                 YOU
                             </div>
                             <div className="flex-1 space-y-4">
@@ -332,7 +333,7 @@ export default function Community() {
                             <p className="text-[10px] uppercase tracking-widest font-bold">Decrypting signals...</p>
                         </div>
                     ) : filteredPosts.length === 0 ? (
-                        <div className="p-12 text-center border-2 border-dashed border-white/5 bg-white/5 rounded-[2rem]">
+                        <div className="p-12 text-center border-2 border-dashed border-white/5 bg-white/5 rounded-4xl">
                             <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10 opacity-50">
                                 <Search className="text-slate-400" size={24} />
                             </div>
@@ -352,8 +353,8 @@ export default function Community() {
             </div>
 
             {/* Right Sidebar (Leaderboard - Desktop) - Fixed Width, less dominant */}
-            <div className="hidden lg:flex w-60 flex-col h-full overflow-hidden flex-shrink-0 pb-6">
-                <div className="p-6 bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-xl h-full flex flex-col rounded-[2rem]">
+            <div className="hidden lg:flex w-60 flex-col h-full overflow-hidden shrink-0 pb-6">
+                <div className="p-6 bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-xl h-full flex flex-col rounded-4xl">
                     <h3 className="font-display font-bold text-white flex items-center gap-2 mb-6 text-base">
                         <Trophy size={18} className="text-amber-400" /> Sector Leaders
                     </h3>
@@ -390,11 +391,41 @@ export default function Community() {
                         ))}
                     </div>
 
-                    <button className="mt-4 w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 border border-white/5">
+                    <button
+                        onClick={() => setShowRankingModal(true)}
+                        className="mt-4 w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 border border-white/5 cursor-pointer"
+                    >
                         View Full Rankings
                     </button>
                 </div>
             </div>
+
+            {/* Feature Locked Modal */}
+            {showRankingModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-fade-in" onClick={() => setShowRankingModal(false)}>
+                    <div className="bg-slate-900 border border-white/10 p-8 rounded-3xl max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-amber-500 to-transparent opacity-50"></div>
+                        <button onClick={() => setShowRankingModal(false)} className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors cursor-pointer"><AlertTriangle size={20} /></button>
+
+                        <div className="text-center">
+                            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 mb-6 mx-auto border border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+                                <Shield size={32} />
+                            </div>
+                            <h3 className="text-xl font-display font-bold text-white mb-2">Access Restricted</h3>
+                            <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                                Global Leaderboard protocols are currently under development by High Command.
+                                <br /><span className="text-amber-500/80 text-xs font-mono mt-2 block">ERROR_CODE: FEATURE_LOCKED_Lv5</span>
+                            </p>
+                            <button
+                                onClick={() => setShowRankingModal(false)}
+                                className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs uppercase tracking-widest border border-white/5 transition-colors cursor-pointer"
+                            >
+                                Acknowledge
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -445,11 +476,11 @@ function PostCard({ post }: { post: Post }) {
             </div>
 
             <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-slate-700 overflow-hidden flex-shrink-0 border border-white/10 shadow-lg">
+                <div className="w-12 h-12 rounded-2xl bg-slate-700 overflow-hidden shrink-0 border border-white/10 shadow-lg">
                     {post.profiles?.avatar_url ? (
                         <img src={post.profiles.avatar_url} alt={post.profiles.username} className="w-full h-full object-cover" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs bg-gradient-to-br from-slate-700 to-slate-800">
+                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs bg-linear-to-br from-slate-700 to-slate-800">
                             {post.profiles?.username?.[0] || 'U'}
                         </div>
                     )}

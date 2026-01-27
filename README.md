@@ -1,6 +1,6 @@
 # 🌊 Hiro Marine Protection System
 
-**"Defending the Blue Heart of our planet."**
+> "Defending the Blue Heart of our planet."
 
 Hiro Marine is a gamified conservation platform designed to mobilize "Operatives" (users) for real-world marine protection missions. It combines a high-fidelity "Sci-Fi Marine" UI with robust data tracking (Supabase) to manage coastal cleanups, biodiversity monitoring, and community clans.
 

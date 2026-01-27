@@ -18,13 +18,13 @@ export default function LocationModal({ location, onClose }: LocationModalProps)
             aria-labelledby="modal-title"
         >
             <div
-                className="bg-slate-900 rounded-[2rem] max-w-lg w-full overflow-hidden shadow-2xl relative animate-scale-up border border-white/10 shadow-cyan-500/10"
+                className="bg-slate-900 rounded-4xl max-w-lg w-full overflow-hidden shadow-2xl relative animate-scale-up border border-white/10 shadow-cyan-500/10"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Hero Image */}
                 <div className="h-56 relative">
                     <img src={location.image_url || ''} alt={location.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-slate-900 via-transparent to-transparent" />
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all cursor-pointer border border-white/10 focus:ring-2 focus:ring-white focus:outline-none"

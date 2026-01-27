@@ -31,6 +31,32 @@ export default function Profile() {
         if (showEditModal) loadUserData();
     }, [showEditModal]);
 
+    // Fetch Mission History (Mock/Real)
+    useEffect(() => {
+        const fetchHistory = async () => {
+            // In a real app, query table 'mission_submissions'
+            // For now, we mock it or query if possible. 
+            // Let's try to query if we have the table, otherwise empty.
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                const { data } = await supabase
+                    .from('mission_submissions')
+                    .select('*, missions(*)')
+                    .eq('player_id', user.id)
+                    .order('submitted_at', { ascending: false });
+
+                if (data) setMissionHistory(data);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoadingHistory(false);
+            }
+        };
+        fetchHistory();
+    }, []);
+
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault();
         setUpdating(true);
@@ -54,7 +80,7 @@ export default function Profile() {
     };
 
     return (
-        <div className="h-full w-full p-4 lg:p-10 overflow-y-auto custom-scrollbar bg-gradient-to-br from-slate-900 via-[#0B1120] to-[#0f172a] text-slate-200">
+        <div className="h-full w-full p-4 lg:p-10 overflow-y-auto custom-scrollbar bg-linear-to-br from-slate-900 via-[#0B1120] to-surface-pure text-slate-200">
             <div className="max-w-6xl mx-auto space-y-8 pb-20">
                 {/* ... (Header content mostly same, just updating buttons) ... */}
 
@@ -66,11 +92,11 @@ export default function Profile() {
                     </div>
 
                     {/* Avatar / Rank Insignia */}
-                    <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
+                    <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0">
                         <div className="absolute inset-0 rounded-full border border-cyan-400/30 animate-[ripple_3s_infinite]"></div>
                         <div className="absolute inset-0 rounded-full border border-cyan-400/30 animate-[ripple_3s_infinite_1s]"></div>
 
-                        <div className="w-full h-full rounded-full border-4 border-slate-900 flex items-center justify-center bg-gradient-to-br from-cyan-600 to-blue-900 relative z-10 overflow-hidden shadow-xl group-hover:scale-105 transition-transform duration-500">
+                        <div className="w-full h-full rounded-full border-4 border-slate-900 flex items-center justify-center bg-linear-to-br from-cyan-600 to-blue-900 relative z-10 overflow-hidden shadow-xl group-hover:scale-105 transition-transform duration-500">
                             <span className="text-5xl font-display font-black italic text-white relative z-10 drop-shadow-md">{level}</span>
                         </div>
                         <div className="absolute -bottom-3 w-full text-center z-20">
@@ -111,7 +137,7 @@ export default function Profile() {
                         {/* Progress Bar */}
                         <div className="w-full bg-slate-950/50 h-4 rounded-full overflow-hidden mb-3 p-[2px] shadow-inner border border-white/5">
                             <div
-                                className="h-full bg-gradient-to-r from-blue-600 via-cyan-500 to-cyan-300 rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
+                                className="h-full bg-linear-to-r from-blue-600 via-cyan-500 to-cyan-300 rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
                                 style={{ width: `${progressPercent}%` }}
                             >
                                 <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]"></div>

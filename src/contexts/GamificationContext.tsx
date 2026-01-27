@@ -27,10 +27,10 @@ interface GameState {
 const GamificationContext = createContext<GameState | undefined>(undefined);
 
 export function GamificationProvider({ children }: { children: React.ReactNode }) {
-    const [xp, setXp] = useState(1250);
-    const [shells, setShells] = useState(450);
+    const [xp, setXp] = useState(0);
+    const [shells, setShells] = useState(0);
     const [level, setLevel] = useState(1);
-    const [rank, setRank] = useState('Observer');
+    const [rank, setRank] = useState('Novice');
 
     // Derived state for level calculation
     useEffect(() => {

@@ -25,7 +25,8 @@ export default function AdminDashboard() {
             }
 
             // Check role in players table
-            const { data: player, error } = await supabase
+            // Check role in players table
+            const { data: player } = await supabase
                 .from('players')
                 .select('role')
                 .eq('id', user.id)

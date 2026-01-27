@@ -30,7 +30,7 @@ export default function LocationGrid({ locations, onLocationClick }: LocationGri
                             alt={loc.name}
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-75 group-hover:opacity-100"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-slate-950/90 via-transparent to-transparent" />
 
                         <div className="absolute bottom-4 left-4 right-4">
                             <h3 className="text-white font-bold text-sm mb-1 leading-tight group-hover:text-cyan-300 transition-colors">{loc.name}</h3>

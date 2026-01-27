@@ -29,7 +29,7 @@ export default function Dashboard() {
 
     return (
         // Main Background: Deep Ocean Dark Gradient
-        <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-900 via-[#0B1120] to-[#0f172a] p-4 lg:p-8 custom-scrollbar text-slate-200">
+        <div className="h-full overflow-y-auto bg-linear-to-br from-slate-900 via-[#0B1120] to-surface-pure p-4 lg:p-8 custom-scrollbar text-slate-200">
 
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">

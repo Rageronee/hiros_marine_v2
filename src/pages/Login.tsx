@@ -137,7 +137,7 @@ export default function Login() {
                     alt="Deep Ocean"
                     className="w-full h-full object-cover opacity-60"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-blue-900/30 mix-blend-multiply" />
+                <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-900/90 to-blue-900/30 mix-blend-multiply" />
                 <div className="absolute inset-0 bg-black/20" />
             </div>
 
@@ -181,7 +181,7 @@ export default function Login() {
 
                 {/* Right Side: Login Form */}
                 <div className="flex-1 flex flex-col justify-center items-center lg:items-start p-6 lg:p-16 overflow-y-auto custom-scrollbar">
-                    <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 shadow-2xl">
+                    <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl p-8 rounded-4xl border border-white/10 shadow-2xl">
 
                         {/* Mobile Header (Only visible on small screens) */}
                         <div className="lg:hidden text-center mb-8">
@@ -225,14 +225,14 @@ export default function Login() {
                         {/* Error Message */}
                         {error && (
                             <div className="mb-6 px-4 py-3 bg-red-500/10 text-red-400 text-xs font-bold rounded-xl border border-red-500/20 flex gap-3 items-start animate-fade-in">
-                                <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" />
+                                <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                                 <span>{error}</span>
                             </div>
                         )}
 
                         {successMessage && (
                             <div className="mb-6 px-4 py-3 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-xl border border-emerald-500/20 flex gap-3 items-start animate-fade-in">
-                                <Shield size={14} className="mt-0.5 flex-shrink-0" />
+                                <Shield size={14} className="mt-0.5 shrink-0" />
                                 <span>{successMessage}</span>
                             </div>
                         )}
@@ -318,7 +318,7 @@ export default function Login() {
                     <div className="mt-8 text-center w-full max-w-md">
                         <p className="text-[10px] font-mono text-cyan-900/60 uppercase tracking-[0.2em] flex items-center justify-center gap-4">
                             <span>Hiro Marine OS v2.1</span>
-                            <a href="/about" className="hover:text-cyan-400 transition-colors border-b border-transparent hover:border-cyan-400/50">System Manual</a>
+                            <a href="/about" className="hover:text-cyan-400 transition-colors border-b border-transparent hover:border-cyan-400/50">About</a>
                         </p>
                     </div>
                 </div>

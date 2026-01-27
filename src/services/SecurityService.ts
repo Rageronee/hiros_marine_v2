@@ -10,6 +10,15 @@ export interface ValidationResult {
 
 export const SecurityService = {
     async validateImage(path: string): Promise<ValidationResult> {
+        // Web Environment Guard
+        // @ts-ignore
+        const isTauri = typeof window !== 'undefined' && window.__TAURI_INTERNALS__ !== undefined;
+
+        if (!isTauri) {
+            console.warn("SecurityService: Web environment detected. Using mock validation.");
+            return this.mockValidation();
+        }
+
         try {
             // @ts-ignore - invoke signature might vary based on setup, safe to ignore for now
             const result: ValidationResult = await invoke('validate_image', { path });

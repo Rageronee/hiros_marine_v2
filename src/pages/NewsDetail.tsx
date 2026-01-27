@@ -78,7 +78,7 @@ export default function NewsDetail() {
                     alt={article.title}
                     className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
 
                 <div className="absolute top-8 left-8 z-20">
                     <button
@@ -98,7 +98,7 @@ export default function NewsDetail() {
                             <span className="flex items-center gap-2 text-slate-300 bg-black/20 px-3 py-1 rounded-full border border-white/5">
                                 <Calendar size={14} /> {new Date(article.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                             </span>
-                            <span className="flex items-center gap-2 text-slate-300 bg-black/20 px-3 py-1 rounded-full border border-white/5 hidden sm:flex">
+                            <span className="flex items-center gap-2 text-slate-300 bg-black/20 px-3 py-1 rounded-full border border-white/5">
                                 <Clock size={14} /> 5 min read
                             </span>
                         </div>
@@ -137,7 +137,7 @@ export default function NewsDetail() {
                     </div>
 
                     {/* Interaction Bar */}
-                    <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap gap-4 justify-between items-center text-slate-400 bg-slate-900/50 p-6 rounded-2xl border border-white/5">
+                    <div className="mt-16 pt-8 border-t border-white/5 flex flex-wrap gap-4 justify-between items-center text-slate-400 bg-slate-900/50 p-6 rounded-2xl border">
                         <div className="flex gap-4 sm:gap-6">
                             <button className="flex items-center gap-2 hover:text-cyan-400 transition-colors px-4 py-2 rounded-full hover:bg-cyan-500/10 cursor-pointer">
                                 <ThumbsUp size={20} /> <span className="text-sm font-bold">Like</span>
