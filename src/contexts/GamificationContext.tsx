@@ -9,12 +9,18 @@ interface Gadge {
     rarity: 'Common' | 'Rare' | 'Legendary' | 'Mythic';
 }
 
+import { supabase } from '../lib/supabase';
+
+// ... existing imports
+
 interface GameState {
     xp: number;
     level: number;
     shells: number; // Currency
     rank: string;
     badges: Gadge[];
+    equippedFrame: string | null;
+    equippedTitle: string | null;
     stats: {
         missionsCompleted: number;
         plasticRemovedKg: number;
@@ -22,6 +28,7 @@ interface GameState {
     };
     addXp: (amount: number) => void;
     addShells: (amount: number) => void;
+    refreshProfile: () => Promise<void>;
 }
 
 const GamificationContext = createContext<GameState | undefined>(undefined);
@@ -31,13 +38,37 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     const [shells, setShells] = useState(0);
     const [level, setLevel] = useState(1);
     const [rank, setRank] = useState('Novice');
+    const [equippedFrame, setEquippedFrame] = useState<string | null>(null);
+    const [equippedTitle, setEquippedTitle] = useState<string | null>(null);
 
-    // Derived state for level calculation
+    // Fetch real data on mount
+    const refreshProfile = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data } = await supabase.from('players').select('xp, shells, level, rank_title, equipped_frame, equipped_title').eq('id', user.id).single();
+            if (data) {
+                setXp(data.xp || 0);
+                setShells(data.shells || 0);
+                setLevel(data.level || 1);
+                setRank(data.rank_title || 'Novice');
+                setEquippedFrame(data.equipped_frame || null);
+                setEquippedTitle(data.equipped_title || null);
+            }
+        }
+    };
+
+    useEffect(() => {
+        refreshProfile();
+    }, []);
+
+    // Derived state for level calculation (Legacy/Local updates)
     useEffect(() => {
         const newLevel = Math.floor(xp / 1000) + 1;
+        // Only update if calculated level is higher than current (and sync to DB ideally)
         if (newLevel > level) {
+            // We can keep local state in sync or rely on DB. 
+            // For now, let's allow local calculation to drive UI until refresh
             setLevel(newLevel);
-            // TODO: Play level up sound / Toast
         }
 
         if (newLevel >= 1 && newLevel < 5) setRank('Observer');
@@ -83,7 +114,7 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     const addShells = (amount: number) => setShells(prev => prev + amount);
 
     return (
-        <GamificationContext.Provider value={{ xp, level, shells, rank, badges, stats, addXp, addShells }}>
+        <GamificationContext.Provider value={{ xp, level, shells, rank, badges, stats, addXp, addShells, refreshProfile, equippedFrame, equippedTitle }}>
             {children}
         </GamificationContext.Provider>
     );

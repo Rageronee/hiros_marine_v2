@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Map, BookOpen, User, Shield, Radio, Volume2, LogOut, Loader2 } from 'lucide-react';
+import { Map, BookOpen, User, Shield, Radio, Volume2, LogOut, Loader2, ShoppingBag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function Layout() {
     const navigate = useNavigate();
     const [loggingOut, setLoggingOut] = useState(false);
-
 
     React.useEffect(() => {
         // Dashboard nav no longer requires role check as Command moved to Profile
@@ -53,6 +52,7 @@ export default function Layout() {
                         <NavItem to="/missions" icon={<Shield size={20} />} label="Missions" />
                         <NavItem to="/encyclopedia" icon={<BookOpen size={20} />} label="Encyclopedia" />
                         <NavItem to="/community" icon={<Radio size={20} />} label="Community" />
+                        <NavItem to="/shop" icon={<ShoppingBag size={20} />} label="Black Market" />
                         <NavItem to="/profile" icon={<User size={20} />} label="Operative" />
 
                         <NavItem to="/about" icon={<BookOpen size={20} className="text-slate-500" />} label="System Manual" />
@@ -91,6 +91,7 @@ export default function Layout() {
                 <NavItemMobile to="/missions" icon={<Shield size={24} strokeWidth={1.5} />} />
                 <NavItemMobile to="/encyclopedia" icon={<BookOpen size={24} strokeWidth={1.5} />} />
                 <NavItemMobile to="/community" icon={<Radio size={24} strokeWidth={1.5} />} />
+                <NavItemMobile to="/shop" icon={<ShoppingBag size={24} strokeWidth={1.5} />} />
                 <NavItemMobile to="/profile" icon={<User size={24} strokeWidth={1.5} />} />
             </nav>
 

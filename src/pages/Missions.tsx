@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Target, MapPin, Camera, Clock, CheckCircle, Loader2, Zap, Anchor, Eye, Trash2, AlertTriangle, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -17,46 +18,36 @@ interface Mission {
 
 export default function Missions() {
     const [filter, setFilter] = useState<'Available' | 'Active' | 'Completed'>('Available');
-    const [missions, setMissions] = useState<Mission[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
+
+    // Fetch missions with React Query cache
+    const { data: missions = [], isLoading: loading } = useQuery({
+        queryKey: ['missions'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('missions')
+                .select('*');
+
+            if (error) throw error;
+
+            return (data || []).map(item => ({
+                id: item.id,
+                title: item.title,
+                location: item.location,
+                difficulty: item.difficulty,
+                type: item.type,
+                xpReward: item.xp_reward,
+                shellReward: item.shell_reward,
+                description: item.description,
+                status: item.status,
+                deadline: item.deadline
+            })) as Mission[];
+        }
+    });
 
     const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
     const [processingState, setProcessingState] = useState<'idle' | 'validating' | 'accepting' | 'completed'>('idle');
     const [missionUnlockAnim, setMissionUnlockAnim] = useState(false);
-
-    useEffect(() => {
-        const fetchMissions = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('missions')
-                    .select('*');
-
-                if (error) {
-                    console.error('Error fetching missions:', error);
-                } else {
-                    const formattedData: Mission[] = (data || []).map(item => ({
-                        id: item.id,
-                        title: item.title,
-                        location: item.location,
-                        difficulty: item.difficulty,
-                        type: item.type,
-                        xpReward: item.xp_reward,
-                        shellReward: item.shell_reward,
-                        description: item.description,
-                        status: item.status,
-                        deadline: item.deadline
-                    }));
-                    setMissions(formattedData);
-                }
-            } catch (error) {
-                console.error('Unexpected error:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchMissions();
-    }, []);
 
     const handleAcceptMission = () => {
         setProcessingState('accepting');
@@ -70,7 +61,11 @@ export default function Missions() {
             if (selectedMission) {
                 const updated = { ...selectedMission, status: 'Active' as const };
                 setSelectedMission(updated);
-                setMissions(prev => prev.map(m => m.id === updated.id ? updated : m));
+
+                queryClient.setQueryData(['missions'], (old: Mission[] | undefined) => {
+                    return old ? old.map(m => m.id === updated.id ? updated : m) : [];
+                });
+
                 setFilter('Active');
             }
         }, 2500);
@@ -84,7 +79,11 @@ export default function Missions() {
             setTimeout(() => {
                 setProcessingState('idle');
                 const updated = { ...selectedMission!, status: 'Completed' as const };
-                setMissions(prev => prev.map(m => m.id === updated.id ? updated : m));
+
+                queryClient.setQueryData(['missions'], (old: Mission[] | undefined) => {
+                    return old ? old.map(m => m.id === updated.id ? updated : m) : [];
+                });
+
                 setFilter('Completed');
                 setSelectedMission(null);
             }, 2000);
@@ -114,7 +113,7 @@ export default function Missions() {
     const filteredMissions = missions.filter(m => m.status === filter);
 
     return (
-        <div className="h-full w-full p-4 lg:p-8 flex flex-col lg:flex-row gap-8 overflow-hidden bg-gradient-to-br from-slate-900 via-[#0B1120] to-[#0f172a] relative">
+        <div className="h-full w-full p-4 lg:p-8 flex flex-col lg:flex-row gap-8 overflow-hidden bg-linear-to-br from-slate-900 via-[#0B1120] to-surface-pure relative">
 
             {/* Organic Water Unlock Overlay (Mission Acquired) */}
             {missionUnlockAnim && (
@@ -122,7 +121,7 @@ export default function Missions() {
                     <div className="text-center relative max-w-md w-full mx-4 overflow-hidden rounded-[3rem] p-12 bg-slate-900 border border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.2)]">
                         <div className="absolute inset-0 z-0 overflow-hidden opacity-20 pointer-events-none">
                             {/* Abstract Particles */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/10 to-transparent" />
+                            <div className="absolute inset-0 bg-linear-to-b from-cyan-500/10 to-transparent" />
                         </div>
 
                         <div className="relative z-10">
@@ -160,7 +159,7 @@ export default function Missions() {
             )}
 
             {/* Mission List */}
-            <div className={`w-full lg:w-1/2 flex flex-col h-full transition-all duration-500 ${selectedMission ? 'hidden lg:flex' : 'flex'}`}>
+            <div className={`w-full lg:w-1/2 flex-col h-full transition-all duration-500 ${selectedMission ? 'hidden lg:flex' : 'flex'}`}>
                 <header className="mb-8 pl-2">
                     <h1 className="text-4xl lg:text-5xl font-display text-white mb-4 tracking-tight font-black drop-shadow-[0_0_15px_rgba(34,211,238,0.2)]">Mission Control</h1>
                     <div className="flex gap-4 sm:gap-8 border-b border-white/10 pb-4 overflow-x-auto">
@@ -235,7 +234,7 @@ export default function Missions() {
             </div>
 
             {/* Mission Details Panel (Desktop & Mobile) */}
-            <div className={`fixed inset-0 lg:static lg:flex w-full lg:w-1/2 p-0 lg:p-0 flex-col relative overflow-hidden bg-slate-900 z-40 transition-transform duration-500 border-l border-white/5 ${selectedMission ? 'translate-y-0' : 'translate-y-[110%] lg:translate-y-0 lg:opacity-50 lg:pointer-events-none lg:grayscale'}`}>
+            <div className={`fixed inset-0 lg:relative lg:flex w-full lg:w-1/2 p-0 lg:p-0 flex-col overflow-hidden bg-slate-900 z-40 transition-transform duration-500 border-l border-white/5 ${selectedMission ? 'translate-y-0' : 'translate-y-[110%] lg:translate-y-0 lg:opacity-50 lg:pointer-events-none lg:grayscale'}`}>
 
                 {selectedMission ? (
                     <div className="h-full flex flex-col relative bg-slate-900/50 backdrop-blur-xl">
@@ -251,7 +250,7 @@ export default function Missions() {
                         </button>
 
                         <div className="p-8 lg:p-12 flex-1 overflow-y-auto custom-scrollbar relative z-10">
-                            <span className={`inline-block mb-6 px-3 py-1 rounded text-[10px] font-black uppercase tracking-[0.2em] border ${getDifficultyColor(selectedMission.difficulty)}`}>
+                            <span className={`inline-flex mb-6 px-3 py-1 rounded text-[10px] font-black uppercase tracking-[0.2em] border ${getDifficultyColor(selectedMission.difficulty)}`}>
                                 {selectedMission.difficulty} Priority
                             </span>
 

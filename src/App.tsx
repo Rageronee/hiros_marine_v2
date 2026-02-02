@@ -12,6 +12,7 @@ import Community from './pages/Community';
 import AdminDashboard from './pages/AdminDashboard';
 import NewsDetail from './pages/NewsDetail';
 import NewsArchive from './pages/NewsArchive';
+import Shop from './pages/Shop';
 import { GamificationProvider } from './contexts/GamificationContext';
 import { SoundscapeProvider } from './contexts/SoundscapeContext';
 
@@ -33,6 +34,7 @@ function App() {
                 <Route path="missions" element={<Missions />} />
                 <Route path="encyclopedia" element={<Encyclopedia />} />
                 <Route path="community" element={<Community />} />
+                <Route path="shop" element={<Shop />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="admin" element={<AdminDashboard />} />
               </Route>

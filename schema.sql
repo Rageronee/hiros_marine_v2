@@ -423,7 +423,9 @@ CREATE TABLE "public"."players" (
     "bio" TEXT DEFAULT 'Ready for deployment.',
     "level" INTEGER DEFAULT 1,
     "xp" INTEGER DEFAULT 0,
-    "rank_title" TEXT DEFAULT 'Novice'
+    "rank_title" TEXT DEFAULT 'Novice',
+    "equipped_frame" UUID,
+    "equipped_title" UUID
 );
 ALTER TABLE "public"."players" ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read players" ON "public"."players" FOR
@@ -590,3 +592,133 @@ VALUES (
 -- Example:
 -- UPDATE public.players SET role = 'Admin' WHERE email = 'admin@hiro.com';
 -- (Note: 'email' is not in players table by default unless you joined it, so ID is safer)
+----------------------------------------------------------------
+-- 11. SHOP SYSTEM
+----------------------------------------------------------------
+CREATE TABLE "public"."shop_items" (
+    "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "type" TEXT NOT NULL CHECK ("type" IN ('Frame', 'Title', 'Badge')),
+    "cost" INTEGER NOT NULL,
+    "description" TEXT,
+    "image_url" TEXT,
+    "rarity" TEXT DEFAULT 'Common',
+    "created_at" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE "public"."shop_items" ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read shop items" ON "public"."shop_items" FOR
+SELECT USING (true);
+CREATE POLICY "Admin manage shop" ON "public"."shop_items" FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE TABLE "public"."user_inventory" (
+    "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    "user_id" UUID REFERENCES "public"."players"("id") ON DELETE CASCADE,
+    "item_id" UUID REFERENCES "public"."shop_items"("id") ON DELETE CASCADE,
+    "equipped" BOOLEAN DEFAULT false,
+    "purchased_at" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE("user_id", "item_id")
+);
+ALTER TABLE "public"."user_inventory" ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "users view own inventory" ON "public"."user_inventory" FOR
+SELECT USING (auth.uid() = user_id);
+CREATE POLICY "users purchase items" ON "public"."user_inventory" FOR
+INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "users update equip" ON "public"."user_inventory" FOR
+UPDATE USING (auth.uid() = user_id);
+-- SEED SHOP ITEMS
+INSERT INTO "public"."shop_items" (
+        "name",
+        "type",
+        "cost",
+        "description",
+        "image_url",
+        "rarity"
+    )
+VALUES (
+        'Neon Cyber',
+        'Frame',
+        500,
+        'A glowing neon frame for the digital age.',
+        'frame_neon_cyber',
+        'Rare'
+    ),
+    (
+        'Deep Diver',
+        'Title',
+        200,
+        'Show your depth mastery.',
+        'title_deep_diver',
+        'Common'
+    ),
+    (
+        'Abyssal Void',
+        'Frame',
+        1000,
+        'Stare into the abyss.',
+        'frame_abyssal',
+        'Legendary'
+    ),
+    (
+        'Coral Guardian',
+        'Badge',
+        300,
+        'Protector of the reefs.',
+        'badge_coral',
+        'Uncommon'
+    );
+-- SQUAD SYSTEM
+CREATE TABLE "public"."squads" (
+    "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    "name" TEXT NOT NULL UNIQUE,
+    "description" TEXT,
+    "leader_id" UUID REFERENCES "public"."players"("id"),
+    "member_count" INTEGER DEFAULT 1,
+    "avatar_url" TEXT,
+    "created_at" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE TABLE "public"."squad_members" (
+    "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    "squad_id" UUID REFERENCES "public"."squads"("id") ON DELETE CASCADE,
+    "user_id" UUID REFERENCES "public"."players"("id") ON DELETE CASCADE,
+    "role" TEXT DEFAULT 'Member',
+    -- 'Leader', 'Member'
+    "joined_at" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE("user_id") -- Enforce one squad per user
+);
+ALTER TABLE "public"."squads" ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read squads" ON "public"."squads" FOR
+SELECT USING (true);
+CREATE POLICY "Authenticated create squads" ON "public"."squads" FOR
+INSERT WITH CHECK (auth.uid() = leader_id);
+CREATE POLICY "Leader update squads" ON "public"."squads" FOR
+UPDATE USING (auth.uid() = leader_id);
+ALTER TABLE "public"."squad_members" ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read squad members" ON "public"."squad_members" FOR
+SELECT USING (true);
+CREATE POLICY "Join squad" ON "public"."squad_members" FOR
+INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Leave squad" ON "public"."squad_members" FOR DELETE USING (auth.uid() = user_id);
+-- SEED SQUADS
+INSERT INTO "public"."squads" (
+        "name",
+        "description",
+        "leader_id",
+        "member_count"
+    )
+VALUES (
+        'Deep Sea Vanguards',
+        'Exploring the deepest trenches.',
+        NULL,
+        5
+    ),
+    (
+        'Coral Defenders',
+        'Protecting the reefs at all costs.',
+        NULL,
+        12
+    ),
+    (
+        'Abyssal Walkers',
+        'We fear no darkness.',
+        NULL,
+        8
+    );

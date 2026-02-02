@@ -52,8 +52,6 @@ export default function Community() {
     const [filterCategory, setFilterCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('Newest');
-    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
-    const [showRankingModal, setShowRankingModal] = useState(false);
 
     useEffect(() => {
         fetchPosts();
@@ -143,34 +141,87 @@ export default function Community() {
         }
     };
 
+    // Tab State
+    const [activeTab, setActiveTab] = useState<'feed' | 'squads' | 'leaderboard'>('feed');
+
+    return (
+        <div className="h-full w-full p-4 lg:p-6 lg:pb-0 flex flex-col gap-6 bg-linear-to-br from-slate-900 via-[#0B1120] to-surface-pure text-slate-200 overflow-hidden max-w-[1920px] mx-auto">
+
+            {/* Top Navigation Tabs */}
+            <header className="flex items-center justify-between shrink-0">
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => setActiveTab('feed')}
+                        className={`px-6 py-3 rounded-2xl font-bold uppercase tracking-widest text-xs transition-all flex items-center gap-2 ${activeTab === 'feed' ? 'bg-cyan-500 text-slate-900' : 'bg-slate-800/50 text-slate-400 hover:text-white border border-white/5'}`}
+                    >
+                        <MessageSquare size={16} /> Global Feed
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('squads')}
+                        className={`px-6 py-3 rounded-2xl font-bold uppercase tracking-widest text-xs transition-all flex items-center gap-2 ${activeTab === 'squads' ? 'bg-cyan-500 text-slate-900' : 'bg-slate-800/50 text-slate-400 hover:text-white border border-white/5'}`}
+                    >
+                        <Shield size={16} /> Squads
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('leaderboard')}
+                        className={`px-6 py-3 rounded-2xl font-bold uppercase tracking-widest text-xs transition-all flex items-center gap-2 ${activeTab === 'leaderboard' ? 'bg-cyan-500 text-slate-900' : 'bg-slate-800/50 text-slate-400 hover:text-white border border-white/5'}`}
+                    >
+                        <Trophy size={16} /> Leaderboard
+                    </button>
+                </div>
+
+                {/* Search Bar - Global for now */}
+                <div className="relative hidden md:block">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-64 bg-slate-800/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs font-medium focus:outline-none focus:border-cyan-500/50 text-white placeholder:text-slate-500 transition-all"
+                    />
+                </div>
+            </header>
+
+            <div className="flex-1 overflow-hidden relative">
+                {activeTab === 'feed' && <FeedView posts={posts} loading={loading} fetchPosts={fetchPosts} handlePostSubmit={handlePostSubmit} newPostContent={newPostContent} setNewPostContent={setNewPostContent} newPostCategory={newPostCategory} setNewPostCategory={setNewPostCategory} submitting={submitting} filterCategory={filterCategory} setFilterCategory={setFilterCategory} sortBy={sortBy} setSortBy={setSortBy} searchQuery={searchQuery} clans={clans} />}
+                {activeTab === 'squads' && <SquadsView />}
+                {activeTab === 'leaderboard' && (
+                    <div className="flex items-center justify-center h-full text-center">
+                        <div className="max-w-md p-8 bg-slate-800/50 rounded-3xl border border-white/5">
+                            <Trophy size={48} className="mx-auto text-amber-400 mb-4" />
+                            <h2 className="text-2xl font-bold text-white mb-2">Global Leaderboard</h2>
+                            <p className="text-slate-400">Detailed rankings are being calibrated. Check back soon.</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+// Sub-components
+function FeedView({ posts, loading, handlePostSubmit, newPostContent, setNewPostContent, newPostCategory, setNewPostCategory, submitting, filterCategory, setFilterCategory, sortBy, setSortBy, searchQuery, clans }: any) {
+    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+    const [showRankingModal, setShowRankingModal] = useState(false);
+
     // Filter Logic
     const filteredPosts = posts
-        .filter(p => filterCategory === 'All' || p.category === filterCategory)
-        .filter(p => p.content.toLowerCase().includes(searchQuery.toLowerCase()) || p.profiles?.username.toLowerCase().includes(searchQuery.toLowerCase()))
-        .sort((a, b) => {
+        .filter((p: Post) => filterCategory === 'All' || p.category === filterCategory)
+        .filter((p: Post) => p.content.toLowerCase().includes(searchQuery.toLowerCase()) || p.profiles?.username.toLowerCase().includes(searchQuery.toLowerCase()))
+        .sort((a: Post, b: Post) => {
             if (sortBy === 'Newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
             if (sortBy === 'Popular') return b.likes_count - a.likes_count;
             return 0;
         });
 
     return (
-        <div className="h-full w-full p-4 lg:p-6 lg:pb-0 flex flex-col lg:flex-row gap-6 bg-linear-to-br from-slate-900 via-[#0B1120] to-surface-pure text-slate-200 overflow-hidden max-w-[1920px] mx-auto">
-
+        <div className="flex flex-col lg:flex-row gap-6 h-full overflow-hidden">
             {/* Mobile Filter Toggle */}
-            <div className="lg:hidden flex gap-4 mb-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Search frequency..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-slate-800/50 border border-white/10 rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:border-cyan-500/50 text-white placeholder:text-slate-500 shadow-sm"
-                    />
-                </div>
+            <div className="lg:hidden flex gap-4 mb-4 shrink-0">
                 <button
                     onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                    className={`p-3 rounded-2xl border border-white/10 shadow-sm transition-colors ${isMobileFiltersOpen ? 'bg-cyan-500 text-slate-900 border-cyan-400' : 'bg-slate-800/50 text-slate-300'}`}
+                    className={`p-3 rounded-2xl border border-white/10 shadow-sm transition-colors cursor-pointer ${isMobileFiltersOpen ? 'bg-cyan-500 text-slate-900 border-cyan-400' : 'bg-slate-800/50 text-slate-300'}`}
                 >
                     <Filter size={20} />
                 </button>
@@ -178,7 +229,7 @@ export default function Community() {
 
             {/* Mobile Filters Drawer */}
             {isMobileFiltersOpen && (
-                <div className="lg:hidden mb-6 space-y-4 animate-slide-down">
+                <div className="lg:hidden mb-6 space-y-4 animate-slide-down shrink-0">
                     <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
                         <button
                             onClick={() => setFilterCategory('All')}
@@ -196,34 +247,12 @@ export default function Community() {
                             </button>
                         ))}
                     </div>
-                    <div className="flex gap-2">
-                        {SORT_OPTIONS.map(opt => (
-                            <button
-                                key={opt}
-                                onClick={() => setSortBy(opt)}
-                                className={`flex-1 py-2.5 text-xs font-bold rounded-xl border shadow-sm transition-all ${sortBy === opt ? 'bg-slate-700 border-cyan-500/30 text-cyan-400' : 'bg-slate-900 border-white/10 text-slate-500'}`}
-                            >
-                                {opt}
-                            </button>
-                        ))}
-                    </div>
                 </div>
             )}
 
-            {/* Left Sidebar (Desktop Filters & Info) - Reduced Width for Main Feed Priority */}
+            {/* Left Sidebar (Desktop Filters & Info) */}
             <div className="hidden lg:flex w-50 flex-col gap-6 h-full overflow-hidden shrink-0 pb-6">
                 <div className="p-5 bg-slate-800/40 backdrop-blur-md rounded-4xl border border-white/5 shadow-xl flex flex-col gap-6 h-full">
-                    {/* Search */}
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                        <input
-                            type="text"
-                            placeholder="Scan..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-slate-900/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-xs font-medium focus:outline-none focus:border-cyan-500/50 text-white placeholder:text-slate-500 transition-all focus:bg-slate-900"
-                        />
-                    </div>
 
                     {/* Categories */}
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -264,7 +293,7 @@ export default function Community() {
                 </div>
             </div>
 
-            {/* Main Feed - PRIORITIZED (Wider, Flex-1) */}
+            {/* Main Feed */}
             <div className="flex-1 overflow-hidden flex flex-col h-full rounded-4xl relative min-w-0">
                 {/* Header (Desktop) - Compact */}
                 <header className="hidden lg:flex items-end justify-between mb-4 px-2">
@@ -339,20 +368,14 @@ export default function Community() {
                             </div>
                             <h4 className="text-white font-bold text-lg mb-2">Signal Silence</h4>
                             <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto leading-relaxed">No transmissions found. Be the first to broadcast.</p>
-                            <button
-                                onClick={() => { setSearchQuery(''); setFilterCategory('All'); }}
-                                className="px-5 py-2.5 rounded-xl bg-slate-800 text-[10px] font-bold uppercase tracking-widest text-cyan-400 hover:text-white hover:bg-slate-700 transition-all"
-                            >
-                                Reset Scanners
-                            </button>
                         </div>
                     ) : (
-                        filteredPosts.map(post => <PostCard key={post.id} post={post} />)
+                        filteredPosts.map((post: Post) => <PostCard key={post.id} post={post} />)
                     )}
                 </div>
             </div>
 
-            {/* Right Sidebar (Leaderboard - Desktop) - Fixed Width, less dominant */}
+            {/* Right Sidebar (Leaderboard - Desktop) */}
             <div className="hidden lg:flex w-60 flex-col h-full overflow-hidden shrink-0 pb-6">
                 <div className="p-6 bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-xl h-full flex flex-col rounded-4xl">
                     <h3 className="font-display font-bold text-white flex items-center gap-2 mb-6 text-base">
@@ -360,7 +383,7 @@ export default function Community() {
                     </h3>
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3">
-                        {clans.map((clan, index) => (
+                        {clans.map((clan: Clan, index: number) => (
                             <div key={clan.id} className="group cursor-pointer hover:bg-white/5 p-3 rounded-2xl transition-all border border-transparent hover:border-white/5">
                                 <div className="flex items-center justify-between mb-2 text-xs font-bold">
                                     <div className="flex items-center gap-3 text-white">
@@ -400,7 +423,7 @@ export default function Community() {
                 </div>
             </div>
 
-            {/* Feature Locked Modal */}
+            {/* Feature Locked Modal (Internal to FeedView now) */}
             {showRankingModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-fade-in" onClick={() => setShowRankingModal(false)}>
                     <div className="bg-slate-900 border border-white/10 p-8 rounded-3xl max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -423,6 +446,209 @@ export default function Community() {
                                 Acknowledge
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ... actually, let's just REPLACE the return statement and put the existing huge block inside {activeTab === 'feed' && (...)}.
+// And simply add the HEADER above it.
+// This is safer.
+
+function SquadsView() {
+    const [squads, setSquads] = useState<any[]>([]);
+    const [mySquad, setMySquad] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [createModalInfo, setCreateModalInfo] = useState({ show: false, name: '', description: '' });
+
+    useEffect(() => {
+        fetchSquadData();
+    }, []);
+
+    const fetchSquadData = async () => {
+        setLoading(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                // Check if user is in a squad
+                const { data: membership } = await supabase.from('squad_members').select('*, squads(*)').eq('user_id', user.id).single();
+                if (membership) {
+                    setMySquad(membership);
+                }
+            }
+
+            // Fetch all squads
+            const { data: allSquads } = await supabase.from('squads').select('*').order('member_count', { ascending: false });
+            setSquads(allSquads || []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateSquad = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            // 1. Create Squad
+            const { data: newSquad, error } = await supabase.from('squads').insert({
+                name: createModalInfo.name,
+                description: createModalInfo.description,
+                leader_id: user.id,
+                member_count: 1
+            }).select().single();
+
+            if (error) throw error;
+
+            // 2. Add Leader as Member
+            const { error: memberError } = await supabase.from('squad_members').insert({
+                squad_id: newSquad.id,
+                user_id: user.id,
+                role: 'Leader'
+            });
+
+            if (memberError) throw memberError;
+
+            setCreateModalInfo({ show: false, name: '', description: '' });
+            fetchSquadData(); // Refresh
+
+        } catch (e: any) {
+            alert('Failed to create squad: ' + e.message);
+        }
+    };
+
+    const handleJoinSquad = async (squadId: string) => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { error } = await supabase.from('squad_members').insert({
+                squad_id: squadId,
+                user_id: user.id,
+                role: 'Member'
+            });
+
+            if (error) throw error;
+
+            // Optimistic update or refresh
+            // Also update member count (tricky without trigger, but okay for proto)
+            // await supabase.rpc('increment_squad_count', { row_id: squadId }); // Mock 
+
+            fetchSquadData();
+        } catch (e: any) {
+            alert('Failed to join squad: ' + e.message);
+        }
+    };
+
+    const handleLeaveSquad = async () => {
+        if (!confirm("Are you sure you want to leave your squad?")) return;
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            await supabase.from('squad_members').delete().eq('user_id', user.id);
+            setMySquad(null);
+            fetchSquadData();
+        } catch (e: any) {
+            alert('Error leaving squad');
+        }
+    };
+
+    if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-cyan-400" /></div>;
+
+    if (mySquad) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+                <div className="max-w-2xl w-full bg-slate-900/50 border border-cyan-500/30 p-12 rounded-3xl shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 inset-x-0 h-1 bg-cyan-500 shadow-[0_0_20px_#22d3ee]"></div>
+
+                    <Shield size={64} className="text-cyan-400 mx-auto mb-6" />
+                    <h2 className="text-4xl font-display font-black text-white mb-2">{mySquad.squads.name}</h2>
+                    <p className="text-slate-400 mb-8">{mySquad.squads.description}</p>
+
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                        <div className="p-4 bg-slate-800 rounded-xl">
+                            <div className="text-xs text-slate-500 uppercase font-bold">Role</div>
+                            <div className="text-xl font-bold text-white">{mySquad.role}</div>
+                        </div>
+                        <div className="p-4 bg-slate-800 rounded-xl">
+                            <div className="text-xs text-slate-500 uppercase font-bold">Joined</div>
+                            <div className="text-xl font-bold text-white">{new Date(mySquad.joined_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+
+                    <button onClick={handleLeaveSquad} className="px-6 py-3 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl font-bold uppercase tracking-widest text-xs transition-colors">
+                        Leave Squad
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="h-full overflow-y-auto custom-scrollbar p-6">
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h2 className="text-3xl font-display font-black text-white">Active Squads</h2>
+                    <p className="text-slate-400 text-sm">Join a fireteam to dominate the leaderboards.</p>
+                </div>
+                <button
+                    onClick={() => setCreateModalInfo({ ...createModalInfo, show: true })}
+                    className="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold rounded-xl uppercase tracking-widest text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+                >
+                    <Shield size={16} /> Create Squad
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {squads.map(sq => (
+                    <div key={sq.id} className="p-6 bg-slate-800/40 border border-white/5 hover:border-cyan-500/30 rounded-3xl transition-all group">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-cyan-400 transition-colors">
+                                <Users size={24} />
+                            </div>
+                            <span className="bg-slate-900 text-slate-400 text-[10px] font-bold px-2 py-1 rounded-lg border border-white/5">{sq.member_count} Members</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">{sq.name}</h3>
+                        <p className="text-sm text-slate-400 mb-6 line-clamp-2">{sq.description}</p>
+                        <button
+                            onClick={() => handleJoinSquad(sq.id)}
+                            className="w-full py-3 bg-white/5 hover:bg-white/10 text-cyan-400 hover:text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-colors"
+                        >
+                            Request Join
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            {/* Create Modal */}
+            {createModalInfo.show && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4" onClick={() => setCreateModalInfo({ ...createModalInfo, show: false })}>
+                    <div className="bg-slate-900 border border-white/10 p-8 rounded-3xl max-w-sm w-full" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-bold text-white mb-6">Form New Squad</h3>
+                        <form onSubmit={handleCreateSquad} className="space-y-4">
+                            <input
+                                className="w-full bg-slate-950 border border-white/10 rounded-xl p-3 text-white focus:border-cyan-500 outline-none"
+                                placeholder="Squad Name"
+                                value={createModalInfo.name}
+                                onChange={e => setCreateModalInfo({ ...createModalInfo, name: e.target.value })}
+                                required
+                            />
+                            <textarea
+                                className="w-full bg-slate-950 border border-white/10 rounded-xl p-3 text-white focus:border-cyan-500 outline-none h-24 resize-none"
+                                placeholder="Description"
+                                value={createModalInfo.description}
+                                onChange={e => setCreateModalInfo({ ...createModalInfo, description: e.target.value })}
+                            />
+                            <button type="submit" className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold rounded-xl uppercase tracking-widest text-xs transition-colors">
+                                Confirm & Initialize
+                            </button>
+                        </form>
                     </div>
                 </div>
             )}
