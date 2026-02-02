@@ -6,19 +6,10 @@ import { supabase } from '../lib/supabase';
 export default function Layout() {
     const navigate = useNavigate();
     const [loggingOut, setLoggingOut] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
+
 
     React.useEffect(() => {
-        const checkRole = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data } = await supabase.from('players').select('role').eq('id', user.id).single();
-                if (data && data.role === 'Admin') {
-                    setIsAdmin(true);
-                }
-            }
-        };
-        checkRole();
+        // Dashboard nav no longer requires role check as Command moved to Profile
     }, []);
 
     const handleLogout = async () => {
@@ -63,9 +54,7 @@ export default function Layout() {
                         <NavItem to="/encyclopedia" icon={<BookOpen size={20} />} label="Encyclopedia" />
                         <NavItem to="/community" icon={<Radio size={20} />} label="Community" />
                         <NavItem to="/profile" icon={<User size={20} />} label="Operative" />
-                        {isAdmin && (
-                            <NavItem to="/admin" icon={<Shield size={20} className="text-alert-red" />} label="Command" />
-                        )}
+
                         <NavItem to="/about" icon={<BookOpen size={20} className="text-slate-500" />} label="System Manual" />
                     </div>
                 </div>
@@ -97,12 +86,12 @@ export default function Layout() {
             </nav>
 
             {/* Mobile Nav */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-slate-900/90 backdrop-blur-2xl border-t border-white/10 z-50 flex items-center justify-around px-4 shadow-[0_-10px_30px_-5px_rgba(0,0,0,0.5)]">
-                <NavItemMobile to="/" icon={<Map size={24} />} />
-                <NavItemMobile to="/missions" icon={<Shield size={24} />} />
-                <NavItemMobile to="/encyclopedia" icon={<BookOpen size={24} />} />
-                <NavItemMobile to="/community" icon={<Radio size={24} />} />
-                <NavItemMobile to="/profile" icon={<User size={24} />} />
+            <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-slate-900/95 backdrop-blur-3xl border-t border-white/5 z-50 flex items-center justify-around px-4 box-content pb-safe">
+                <NavItemMobile to="/" icon={<Map size={24} strokeWidth={1.5} />} />
+                <NavItemMobile to="/missions" icon={<Shield size={24} strokeWidth={1.5} />} />
+                <NavItemMobile to="/encyclopedia" icon={<BookOpen size={24} strokeWidth={1.5} />} />
+                <NavItemMobile to="/community" icon={<Radio size={24} strokeWidth={1.5} />} />
+                <NavItemMobile to="/profile" icon={<User size={24} strokeWidth={1.5} />} />
             </nav>
 
             {/* Main Content Area */}
@@ -141,18 +130,27 @@ function NavItem({ to, icon, label, className }: { to: string; icon: React.React
     );
 }
 
-function NavItemMobile({ to, icon }: { to: string; icon: React.ReactNode }) {
+function NavItemMobile({ to, icon, activeIcon }: { to: string; icon: React.ReactNode, activeIcon?: React.ReactNode }) {
     return (
         <NavLink
             to={to}
             className={({ isActive }) =>
-                `p-4 rounded-full transition-all duration-300 ${isActive
-                    ? 'text-white bg-white/10 translate-y-[-5px] shadow-lg shadow-sky-500/20'
-                    : 'text-slate-500'
+                `relative p-4 flex flex-col items-center justify-center transition-all duration-300 ${isActive
+                    ? 'text-ocean-light'
+                    : 'text-slate-500 hover:text-slate-400'
                 }`
             }
         >
-            {icon}
+            {({ isActive }) => (
+                <>
+                    <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : ''}`}>
+                        {isActive && activeIcon ? activeIcon : icon}
+                    </div>
+                    {isActive && (
+                        <div className="absolute bottom-1 w-1 h-1 rounded-full bg-ocean-light shadow-[0_0_8px_rgba(56,189,248,0.6)]"></div>
+                    )}
+                </>
+            )}
         </NavLink>
     );
 }

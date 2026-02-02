@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGamification } from '../contexts/GamificationContext';
-import { Hexagon, Award, Droplets, Mountain, Edit2, History, ChevronRight, Settings, FileText, Loader2, X } from 'lucide-react';
+import { Hexagon, Award, Droplets, Mountain, Edit2, History, ChevronRight, Settings, FileText, Loader2, X, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function Profile() {
@@ -13,8 +13,22 @@ export default function Profile() {
     const [updating, setUpdating] = useState(false);
 
     // Derived state
+    const [isAdmin, setIsAdmin] = useState(false);
     const nextLevelXp = level * 1000;
     const progressPercent = ((xp % 1000) / 1000) * 100;
+
+    useEffect(() => {
+        const checkRole = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data } = await supabase.from('players').select('role').eq('id', user.id).single();
+                if (data && data.role === 'Admin') {
+                    setIsAdmin(true);
+                }
+            }
+        };
+        checkRole();
+    }, []);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -117,6 +131,16 @@ export default function Profile() {
                             </div>
 
                             <div className="flex gap-3 mx-auto lg:mx-0">
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => window.location.href = '/admin'}
+                                        className="px-4 py-3 rounded-xl bg-alert-red/10 hover:bg-alert-red text-alert-red hover:text-white border border-alert-red/20 transition-all font-bold text-xs uppercase tracking-widest flex items-center gap-2 group cursor-pointer"
+                                        title="Command Center"
+                                    >
+                                        <Shield size={18} className="group-hover:scale-110 transition-transform" />
+                                        <span>Command</span>
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => setShowEditModal(true)}
                                     className="p-3 rounded-full bg-white/5 hover:bg-cyan-500/10 text-cyan-400 border border-white/10 transition-colors group cursor-pointer hover:border-cyan-500/30"
