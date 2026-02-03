@@ -60,7 +60,7 @@ export default function Layout() {
                 </div>
 
                 {/* Footer Actions: Audio & Logout */}
-                <div className="mt-auto space-y-4">
+                <div className="mt-auto space-y-4 hidden lg:flex">
                     <button
                         onClick={handleLogout}
                         disabled={loggingOut}
@@ -70,18 +70,7 @@ export default function Layout() {
                         Disengage
                     </button>
 
-                    <div className="p-4 rounded-2xl bg-black/20 border border-white/5 flex items-center gap-3 backdrop-blur-md shadow-inner cursor-pointer group hover:bg-black/30">
-                        <div className="p-2 bg-ocean-light/10 rounded-full text-ocean-light group-hover:scale-110 transition-transform">
-                            <Volume2 size={16} />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Soundscape</span>
-                            <span className="text-xs font-bold text-ocean-medium flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-success-green animate-pulse"></span>
-                                Pantura - Deep
-                            </span>
-                        </div>
-                    </div>
+
                 </div>
             </nav>
 

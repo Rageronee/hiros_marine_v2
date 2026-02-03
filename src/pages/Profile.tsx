@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useGamification } from '../contexts/GamificationContext';
 import html2canvas from 'html2canvas';
-import { Hexagon, Award, Droplets, Mountain, Edit2, History, ChevronRight, Settings, FileText, Loader2, X, Shield, Bell, Lock, Globe, HelpCircle, AlertOctagon, LogOut, Share2 } from 'lucide-react';
+import { Hexagon, Award, Droplets, Mountain, Edit2, History, ChevronRight, Settings, FileText, Loader2, X, Shield, Bell, Lock, Globe, HelpCircle, AlertOctagon, LogOut, Share2, Volume2, VolumeX, Play, Pause, SkipForward } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { useSoundscape } from '../contexts/SoundscapeContext';
 
 export default function Profile() {
     const navigate = useNavigate();
     const { xp, level, rank, shells, badges, stats, equippedFrame, equippedTitle } = useGamification();
+    const { currentZone, setZone, isMuted, toggleMute } = useSoundscape();
     const [missionHistory, setMissionHistory] = useState<any[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -247,8 +249,8 @@ export default function Profile() {
                                     {displayCallsign}
                                     {titleItem && (
                                         <span className={`px-2 py-1 rounded-md text-[10px] md:text-xs align-middle uppercase tracking-wider relative -top-1 ${titleItem.rarity === 'Legendary' ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' :
-                                                titleItem.rarity === 'Rare' ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20' :
-                                                    'bg-slate-700 text-slate-300'
+                                            titleItem.rarity === 'Rare' ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20' :
+                                                'bg-slate-700 text-slate-300'
                                             }`}>
                                             {titleItem.name}
                                         </span>
@@ -471,6 +473,55 @@ export default function Profile() {
                             {activeSettingsTab === 'general' ? (
                                 <>
                                     <div className="space-y-4">
+                                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Soundscape System</h4>
+                                        <div className="p-4 bg-slate-950/50 rounded-xl border border-white/5">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-2 rounded-lg ${isMuted ? 'bg-slate-800 text-slate-500' : 'bg-cyan-500/10 text-cyan-400'} transition-colors`}>
+                                                        {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-sm font-bold text-white block">Active Zone</span>
+                                                        <span className="text-[10px] text-cyan-400 font-mono uppercase tracking-wider">{currentZone}</span>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={toggleMute}
+                                                    className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${isMuted ? 'border-white/10 text-slate-400 hover:text-white' : 'border-cyan-500/30 text-cyan-400 bg-cyan-500/10'}`}
+                                                >
+                                                    {isMuted ? <Play size={16} className="ml-0.5" /> : <Pause size={16} />}
+                                                </button>
+                                            </div>
+
+                                            {/* Visualizer Mock */}
+                                            {!isMuted && (
+                                                <div className="flex items-center justify-center gap-1 h-8 opacity-50">
+                                                    {[...Array(12)].map((_, i) => (
+                                                        <div
+                                                            key={i}
+                                                            className="w-1 bg-cyan-500 rounded-full animate-wave"
+                                                            style={{
+                                                                height: `${Math.random() * 100}%`,
+                                                                animationDuration: `${0.5 + Math.random()}s`
+                                                            }}
+                                                        ></div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <div className="flex gap-2 mt-4 overflow-x-auto pb-2 custom-scrollbar">
+                                                {['Menu', 'Pantura', 'SouthCoast', 'Silence'].map((zone) => (
+                                                    <button
+                                                        key={zone}
+                                                        onClick={() => setZone(zone as any)}
+                                                        className={`px-3 py-1.5 rounded-lg text-[10px] uppercase font-bold tracking-wider whitespace-nowrap transition-all border ${currentZone === zone ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-slate-900 text-slate-400 border-white/10 hover:border-white/20'}`}
+                                                    >
+                                                        {zone}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
                                         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Interface</h4>
                                         <div className="flex items-center justify-between p-4 bg-slate-950/50 rounded-xl border border-white/5 cursor-pointer hover:bg-white/5 transition-colors" onClick={() => toggleSetting('audio')}>
                                             <div className="flex items-center gap-3">

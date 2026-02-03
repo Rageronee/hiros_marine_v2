@@ -59,7 +59,7 @@ export default function NewsArchive() {
     };
 
     return (
-        <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-900 via-[#0B1120] to-[#0f172a] p-4 lg:p-8 custom-scrollbar">
+        <div className="h-full overflow-y-auto bg-linear-to-br from-slate-900 via-[#0B1120] to-surface-pure p-4 lg:p-8 custom-scrollbar">
             {/* Header */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
                 <div>
@@ -106,7 +106,7 @@ export default function NewsArchive() {
                             onClick={() => navigate(`/news/${item.id}`)}
                             className="bg-slate-800/30 backdrop-blur-md rounded-2xl overflow-hidden border border-white/5 shadow-lg hover:shadow-cyan-500/10 hover:border-cyan-500/30 transition-all duration-300 group cursor-pointer flex flex-col h-full relative"
                         >
-                            <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-transparent via-cyan-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                             <div className="h-56 relative overflow-hidden">
                                 <img
@@ -114,7 +114,7 @@ export default function NewsArchive() {
                                     alt={item.title}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60" />
+                                <div className="absolute inset-0 bg-linear-to-t from-slate-900 via-transparent to-transparent opacity-60" />
                                 <div className="absolute top-4 left-4">
                                     <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 border backdrop-blur-md shadow-lg ${getCategoryColor(item.category)}`}>
                                         {getCategoryIcon(item.category)}

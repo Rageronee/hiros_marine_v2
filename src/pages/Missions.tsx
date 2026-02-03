@@ -12,36 +12,62 @@ interface Mission {
     xpReward: number;
     shellReward: number;
     description: string;
-    status: 'Available' | 'Active' | 'Completed';
+    // Status is now derived relative to the user
+    baseStatus: 'Available' | 'Active' | 'Completed';
     deadline?: string;
+
+    // User specific fields (merged)
+    userStatus?: 'Active' | 'Pending' | 'Approved' | 'Rejected';
+    submissionId?: string;
 }
 
 export default function Missions() {
+    // Filter now maps: 'Available' -> (no submission), 'Active' -> 'Active', 'Completed' -> 'Pending'/'Approved'
     const [filter, setFilter] = useState<'Available' | 'Active' | 'Completed'>('Available');
     const queryClient = useQueryClient();
 
-    // Fetch missions with React Query cache
+    // Fetch missions with user progress merged
     const { data: missions = [], isLoading: loading } = useQuery({
-        queryKey: ['missions'],
+        queryKey: ['missions_full'],
         queryFn: async () => {
-            const { data, error } = await supabase
+            const { data: { user } } = await supabase.auth.getUser();
+
+            // 1. Fetch all missions
+            const { data: allMissions, error: mError } = await supabase
                 .from('missions')
                 .select('*');
+            if (mError) throw mError;
 
-            if (error) throw error;
+            // 2. Fetch user submissions
+            let userSubmissions: any[] = [];
+            if (user) {
+                const { data: subs, error: sError } = await supabase
+                    .from('mission_submissions')
+                    .select('*')
+                    .eq('player_id', user.id);
+                if (!sError) userSubmissions = subs || [];
+            }
 
-            return (data || []).map(item => ({
-                id: item.id,
-                title: item.title,
-                location: item.location,
-                difficulty: item.difficulty,
-                type: item.type,
-                xpReward: item.xp_reward,
-                shellReward: item.shell_reward,
-                description: item.description,
-                status: item.status,
-                deadline: item.deadline
-            })) as Mission[];
+            // 3. Merge
+            return (allMissions || []).map(item => {
+                const submission = userSubmissions.find(s => s.mission_id === item.id);
+
+                return {
+                    id: item.id,
+                    title: item.title,
+                    location: item.location,
+                    difficulty: item.difficulty,
+                    type: item.type,
+                    xpReward: item.xp_reward,
+                    shellReward: item.shell_reward,
+                    description: item.description,
+                    baseStatus: item.status, // Original admin status
+                    deadline: item.deadline,
+
+                    userStatus: submission?.status,
+                    submissionId: submission?.id
+                } as Mission;
+            });
         }
     });
 
@@ -49,45 +75,81 @@ export default function Missions() {
     const [processingState, setProcessingState] = useState<'idle' | 'validating' | 'accepting' | 'completed'>('idle');
     const [missionUnlockAnim, setMissionUnlockAnim] = useState(false);
 
-    const handleAcceptMission = () => {
+    const handleAcceptMission = async () => {
+        if (!selectedMission) return;
         setProcessingState('accepting');
-        setMissionUnlockAnim(true);
 
-        // Simulate holographic unlock sequence
-        setTimeout(() => {
-            setMissionUnlockAnim(false);
-            setProcessingState('idle');
-            // Optimistic update
-            if (selectedMission) {
-                const updated = { ...selectedMission, status: 'Active' as const };
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("No user found");
+
+            // Insert into mission_submissions
+            const { error } = await supabase.from('mission_submissions').insert({
+                mission_id: selectedMission.id,
+                player_id: user.id,
+                status: 'Active'
+            });
+
+            if (error) throw error;
+
+            // UI Animation
+            setMissionUnlockAnim(true);
+            setTimeout(() => {
+                setMissionUnlockAnim(false);
+                setProcessingState('idle');
+
+                // Refresh Data
+                queryClient.invalidateQueries({ queryKey: ['missions_full'] });
+
+                // Update Local State (Optimisticish)
+                const updated = { ...selectedMission, userStatus: 'Active' as const };
                 setSelectedMission(updated);
-
-                queryClient.setQueryData(['missions'], (old: Mission[] | undefined) => {
-                    return old ? old.map(m => m.id === updated.id ? updated : m) : [];
-                });
-
                 setFilter('Active');
-            }
-        }, 2500);
+            }, 2000); // Keep animation for effect
+
+        } catch (e: any) {
+            console.error(e);
+            alert("Failed to accept mission: " + e.message);
+            setProcessingState('idle');
+        }
     };
 
     const handleSubmitEvidence = async () => {
-        // ... (Simulated submission logic remains same)
+        if (!selectedMission) return;
         setProcessingState('validating');
-        setTimeout(() => {
-            setProcessingState('completed');
+
+        try {
+            // Update mission_submissions
+            // In real app, upload file first. Here we assume file upload success.
+            const { error } = await supabase
+                .from('mission_submissions')
+                .update({
+                    status: 'Pending',
+                    proof_url: 'https://placeholder.com/evidence.jpg', // Dummy proof
+                    submitted_at: new Date().toISOString()
+                })
+                .eq('mission_id', selectedMission.id)
+                .eq('player_id', (await supabase.auth.getUser()).data.user?.id);
+
+            if (error) throw error;
+
             setTimeout(() => {
-                setProcessingState('idle');
-                const updated = { ...selectedMission!, status: 'Completed' as const };
+                setProcessingState('completed');
+                setTimeout(() => {
+                    setProcessingState('idle');
+                    queryClient.invalidateQueries({ queryKey: ['missions_full'] });
 
-                queryClient.setQueryData(['missions'], (old: Mission[] | undefined) => {
-                    return old ? old.map(m => m.id === updated.id ? updated : m) : [];
-                });
+                    // Move to Completed tab view (Pending/Approved treated as Completed for now in UI flow)
+                    setFilter('Completed');
+                    setSelectedMission(null);
+                }, 2000);
+            }, 1000);
 
-                setFilter('Completed');
-                setSelectedMission(null);
-            }, 2000);
-        }, 1500);
+        } catch (e: any) {
+            console.error(e);
+            alert("Submission failed: " + e.message);
+            setProcessingState('idle');
+        }
     };
 
     const getMissionIcon = (type: string) => {
@@ -110,7 +172,13 @@ export default function Missions() {
         }
     };
 
-    const filteredMissions = missions.filter(m => m.status === filter);
+    // Filter Logic
+    const filteredMissions = missions.filter(m => {
+        if (filter === 'Available') return !m.userStatus; // No submission yet
+        if (filter === 'Active') return m.userStatus === 'Active';
+        if (filter === 'Completed') return m.userStatus === 'Pending' || m.userStatus === 'Approved';
+        return false;
+    });
 
     return (
         <div className="h-full w-full p-4 lg:p-8 flex flex-col lg:flex-row gap-8 overflow-hidden bg-linear-to-br from-slate-900 via-[#0B1120] to-surface-pure relative">
@@ -227,6 +295,9 @@ export default function Missions() {
                                     <span className="text-cyan-400 text-shadow-glow">+{mission.xpReward} XP</span>
                                     <span className="text-amber-400">+{mission.shellReward} Shells</span>
                                 </div>
+
+                                {mission.userStatus === 'Pending' && <div className="mt-2 text-[10px] text-amber-400 uppercase font-bold tracking-widest flex items-center gap-1"><Clock size={10} /> Verification Pending</div>}
+                                {mission.userStatus === 'Approved' && <div className="mt-2 text-[10px] text-emerald-400 uppercase font-bold tracking-widest flex items-center gap-1"><CheckCircle size={10} /> Completed</div>}
                             </div>
                         ))
                     )}
@@ -298,7 +369,7 @@ export default function Missions() {
 
                             {/* Actions */}
                             <div className="mt-auto pt-8 border-t border-white/5">
-                                {selectedMission.status === 'Available' ? (
+                                {!selectedMission.userStatus ? (
                                     <button
                                         onClick={handleAcceptMission}
                                         disabled={processingState !== 'idle'}
@@ -307,7 +378,7 @@ export default function Missions() {
                                         {processingState === 'accepting' ? <Loader2 className="animate-spin" /> : <Zap size={18} />}
                                         Accept Directive
                                     </button>
-                                ) : selectedMission.status === 'Active' ? (
+                                ) : selectedMission.userStatus === 'Active' ? (
                                     <div className="space-y-4">
                                         <div className="p-4 border border-dashed border-cyan-500/30 rounded-xl bg-cyan-950/20 text-center">
                                             <p className="text-cyan-400 text-xs font-bold uppercase tracking-wider mb-2 animate-pulse">Mission Active</p>
@@ -324,7 +395,7 @@ export default function Missions() {
                                     </div>
                                 ) : (
                                     <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center gap-2 text-emerald-400 font-bold uppercase tracking-widest">
-                                        <CheckCircle size={20} /> Mission Complete
+                                        <CheckCircle size={20} /> Mission {selectedMission.userStatus}
                                     </div>
                                 )}
                             </div>

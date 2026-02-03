@@ -423,6 +423,7 @@ CREATE TABLE "public"."players" (
     "bio" TEXT DEFAULT 'Ready for deployment.',
     "level" INTEGER DEFAULT 1,
     "xp" INTEGER DEFAULT 0,
+    "shells" INTEGER DEFAULT 0,
     "rank_title" TEXT DEFAULT 'Novice',
     "equipped_frame" UUID,
     "equipped_title" UUID
@@ -483,7 +484,7 @@ INSERT ON auth.users FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 CREATE TABLE "public"."mission_submissions" (
     "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     "mission_id" UUID REFERENCES "public"."missions"("id"),
-    "player_id" UUID REFERENCES "auth"."users"("id"),
+    "player_id" UUID REFERENCES "public"."players"("id") ON DELETE CASCADE,
     "status" TEXT DEFAULT 'Pending',
     "proof_url" TEXT,
     "verification_notes" TEXT,
@@ -503,7 +504,7 @@ INSERT WITH CHECK (auth.uid() = player_id);
 ----------------------------------------------------------------
 CREATE TABLE "public"."community_posts" (
     "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    "user_id" UUID REFERENCES "public"."players"("id"),
+    "user_id" UUID REFERENCES "public"."players"("id") ON DELETE CASCADE,
     "content" TEXT NOT NULL,
     "image_url" TEXT,
     "category" TEXT DEFAULT 'General',
@@ -519,7 +520,7 @@ INSERT WITH CHECK (auth.uid() = user_id);
 CREATE TABLE "public"."community_comments" (
     "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     "post_id" UUID REFERENCES "public"."community_posts"("id") ON DELETE CASCADE,
-    "user_id" UUID REFERENCES "auth"."users"("id"),
+    "user_id" UUID REFERENCES "public"."players"("id") ON DELETE CASCADE,
     "content" TEXT NOT NULL,
     "created_at" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -531,13 +532,54 @@ INSERT WITH CHECK (auth.uid() = user_id);
 CREATE TABLE "public"."community_likes" (
     "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     "post_id" UUID REFERENCES "public"."community_posts"("id") ON DELETE CASCADE,
-    "user_id" UUID REFERENCES "auth"."users"("id")
+    "user_id" UUID REFERENCES "public"."players"("id") ON DELETE CASCADE,
+    UNIQUE("post_id", "user_id")
 );
 ALTER TABLE "public"."community_likes" ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read likes" ON "public"."community_likes" FOR
 SELECT USING (true);
 CREATE POLICY "Users insert likes" ON "public"."community_likes" FOR
 INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users delete likes" ON "public"."community_likes" FOR DELETE USING (auth.uid() = user_id);
+-- TRIGGERS FOR COUNTS (SYNC)
+CREATE OR REPLACE FUNCTION public.handle_new_like() RETURNS trigger AS $$ BEGIN
+UPDATE public.community_posts
+SET likes_count = likes_count + 1
+WHERE id = NEW.post_id;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+CREATE OR REPLACE FUNCTION public.handle_un_like() RETURNS trigger AS $$ BEGIN
+UPDATE public.community_posts
+SET likes_count = likes_count - 1
+WHERE id = OLD.post_id;
+RETURN OLD;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+CREATE TRIGGER on_like_added
+AFTER
+INSERT ON public.community_likes FOR EACH ROW EXECUTE PROCEDURE public.handle_new_like();
+CREATE TRIGGER on_like_removed
+AFTER DELETE ON public.community_likes FOR EACH ROW EXECUTE PROCEDURE public.handle_un_like();
+CREATE OR REPLACE FUNCTION public.handle_new_comment() RETURNS trigger AS $$ BEGIN
+UPDATE public.community_posts
+SET comments_count = comments_count + 1
+WHERE id = NEW.post_id;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+CREATE OR REPLACE FUNCTION public.handle_un_comment() RETURNS trigger AS $$ BEGIN
+UPDATE public.community_posts
+SET comments_count = comments_count - 1
+WHERE id = OLD.post_id;
+RETURN OLD;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+CREATE TRIGGER on_comment_added
+AFTER
+INSERT ON public.community_comments FOR EACH ROW EXECUTE PROCEDURE public.handle_new_comment();
+CREATE TRIGGER on_comment_removed
+AFTER DELETE ON public.community_comments FOR EACH ROW EXECUTE PROCEDURE public.handle_un_comment();
 -- IMPORTANT: AFTER CREATING USERS manually (or via script), 
 -- you can manually insert posts using their IDs.
 -- 10. DUMMY COMMUNITY POSTS
